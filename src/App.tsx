@@ -297,7 +297,6 @@ export default function App() {
   // Sharing states
   const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
-  const [pngUrl, setPngUrl] = useState<string>('');
   const [pngLoading, setPngLoading] = useState<boolean>(false);
 
   // Update paper visual dimensions when width setting changes
@@ -310,88 +309,72 @@ export default function App() {
     setSelectedPaperStyle(updated);
   }, [paperWidthMm]);
 
-  // Reset and auto-generate PNG when modal is opened
-  useEffect(() => {
-    if (isShareOpen) {
-      setPngUrl(''); // Reset PNG so it is regenerated fresh
-      handleGeneratePng();
-    }
-  }, [isShareOpen]);
-
-  const handleGeneratePng = async () => {
-    if (!receiptRef.current) return;
-    setPngLoading(true);
-    try {
-      // Small timeout to ensure rendering is complete
-      await new Promise(resolve => setTimeout(resolve, 150));
-      const canvas = await html2canvas(receiptRef.current, {
-        scale: 3, // Crisp resolution
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#fefefc', // Force clean light paper background
-        onclone: (clonedDoc) => {
-          // Process and strip oklch and color-mix from all stylesheets in the cloned document
-          const styleTags = clonedDoc.querySelectorAll('style');
-          styleTags.forEach(styleTag => {
-            let cssText = styleTag.textContent || '';
-            if (cssText.includes('oklch') || cssText.includes('color-mix')) {
-              // 1. Replace oklch(...) functions with black #000000
-              cssText = cssText.replace(/oklch\([^)]+\)/g, '#000000');
-              
-              // 2. Resolve color-mix functions safely to a standard transparent/solid color
-              let index;
-              while ((index = cssText.indexOf('color-mix(')) !== -1) {
-                let openCount = 1;
-                let i = index + 'color-mix('.length;
-                while (i < cssText.length && openCount > 0) {
-                  if (cssText[i] === '(') openCount++;
-                  else if (cssText[i] === ')') openCount--;
-                  i++;
-                }
-                const fullExpression = cssText.substring(index, i);
-                cssText = cssText.replace(fullExpression, 'rgba(0,0,0,0.15)');
+  // High-fidelity PNG receipt generator in memory
+  const generatePngInMemory = async (): Promise<string> => {
+    if (!receiptRef.current) throw new Error('Receipt preview element not found');
+    
+    const canvas = await html2canvas(receiptRef.current, {
+      scale: 3, // Crisp resolution
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#fefefc', // Force clean light paper background
+      onclone: (clonedDoc) => {
+        // Process and strip oklch and color-mix from all stylesheets in the cloned document
+        const styleTags = clonedDoc.querySelectorAll('style');
+        styleTags.forEach(styleTag => {
+          let cssText = styleTag.textContent || '';
+          if (cssText.includes('oklch') || cssText.includes('color-mix')) {
+            // Replace oklch(...) functions with black #000000
+            cssText = cssText.replace(/oklch\([^)]+\)/g, '#000000');
+            
+            // Resolve color-mix functions safely to a standard transparent/solid color
+            let index;
+            while ((index = cssText.indexOf('color-mix(')) !== -1) {
+              let openCount = 1;
+              let i = index + 'color-mix('.length;
+              while (i < cssText.length && openCount > 0) {
+                if (cssText[i] === '(') openCount++;
+                else if (cssText[i] === ')') openCount--;
+                i++;
               }
-              
-              styleTag.textContent = cssText;
+              const fullExpression = cssText.substring(index, i);
+              cssText = cssText.replace(fullExpression, 'rgba(0,0,0,0.15)');
             }
-          });
+            
+            styleTag.textContent = cssText;
+          }
+        });
 
-          // Also strip from any inline styles of elements in the cloned document to be 100% robust
-          const allClonedElements = clonedDoc.querySelectorAll('*');
-          allClonedElements.forEach(el => {
-            const htmlEl = el as HTMLElement;
-            if (htmlEl.style) {
-              const keys = Array.from(htmlEl.style);
-              keys.forEach(key => {
-                const value = htmlEl.style.getPropertyValue(key);
-                if (value.includes('oklch') || value.includes('color-mix')) {
-                  let cleanValue = value.replace(/oklch\([^)]+\)/g, '#000000');
-                  let index;
-                  while ((index = cleanValue.indexOf('color-mix(')) !== -1) {
-                    let openCount = 1;
-                    let i = index + 'color-mix('.length;
-                    while (i < cleanValue.length && openCount > 0) {
-                      if (cleanValue[i] === '(') openCount++;
-                      else if (cleanValue[i] === ')') openCount--;
-                      i++;
-                    }
-                    const fullExpression = cleanValue.substring(index, i);
-                    cleanValue = cleanValue.replace(fullExpression, 'rgba(0,0,0,0.15)');
+        // Also strip from any inline styles of elements in the cloned document
+        const allClonedElements = clonedDoc.querySelectorAll('*');
+        allClonedElements.forEach(el => {
+          const htmlEl = el as HTMLElement;
+          if (htmlEl.style) {
+            const keys = Array.from(htmlEl.style);
+            keys.forEach(key => {
+              const value = htmlEl.style.getPropertyValue(key);
+              if (value.includes('oklch') || value.includes('color-mix')) {
+                let cleanValue = value.replace(/oklch\([^)]+\)/g, '#000000');
+                let index;
+                while ((index = cleanValue.indexOf('color-mix(')) !== -1) {
+                  let openCount = 1;
+                  let i = index + 'color-mix('.length;
+                  while (i < cleanValue.length && openCount > 0) {
+                    if (cleanValue[i] === '(') openCount++;
+                    else if (cleanValue[i] === ')') openCount--;
+                    i++;
                   }
-                  htmlEl.style.setProperty(key, cleanValue);
+                  const fullExpression = cleanValue.substring(index, i);
+                  cleanValue = cleanValue.replace(fullExpression, 'rgba(0,0,0,0.15)');
                 }
-              });
-            }
-          });
-        }
-      });
-      const dataUrl = canvas.toDataURL('image/png');
-      setPngUrl(dataUrl);
-    } catch (err) {
-      console.error('Failed to generate PNG receipt image:', err);
-    } finally {
-      setPngLoading(false);
-    }
+                htmlEl.style.setProperty(key, cleanValue);
+              }
+            });
+          }
+        });
+      }
+    });
+    return canvas.toDataURL('image/png');
   };
 
 
@@ -507,20 +490,32 @@ export default function App() {
     }
   };
 
-  const handleDownloadPng = () => {
-    if (!pngUrl) return;
-    const a = document.createElement('a');
-    a.href = pngUrl;
-    a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownloadPng = async () => {
+    if (pngLoading) return;
+    setPngLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 100)); // smooth visual transition
+      const dataUrl = await generatePngInMemory();
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Failed to generate and download PNG:', err);
+    } finally {
+      setPngLoading(false);
+    }
   };
 
   const handleSharePng = async () => {
-    if (!pngUrl) return;
+    if (pngLoading) return;
+    setPngLoading(true);
     try {
-      const res = await fetch(pngUrl);
+      await new Promise(resolve => setTimeout(resolve, 100)); // smooth visual transition
+      const dataUrl = await generatePngInMemory();
+      const res = await fetch(dataUrl);
       const blob = await res.blob();
       const file = new File([blob], `weighbridge-receipt-${paperWidthMm}mm.png`, {
         type: 'image/png',
@@ -533,11 +528,29 @@ export default function App() {
           text: `Visual PNG image of thermal receipt for ${paperWidthMm}mm paper`,
         });
       } else {
-        handleDownloadPng();
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       }
     } catch (err: any) {
       console.error('Web Share failed for PNG, downloading fallback:', err);
-      handleDownloadPng();
+      // Fallback
+      try {
+        const dataUrl = await generatePngInMemory();
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (innerErr) {
+        console.error('In-memory PNG generation fallback failed:', innerErr);
+      }
+    } finally {
+      setPngLoading(false);
     }
   };
 
@@ -937,7 +950,7 @@ const UniverseScaleLogo = () => (
       {isShareOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in" id="share-modal-backdrop">
           <div 
-            className="bg-[#0E1524] border border-slate-800 rounded-3xl w-full max-w-4xl shadow-2xl p-6 relative overflow-hidden flex flex-col max-h-[90vh]"
+            className="bg-[#0E1524] border border-slate-800 rounded-3xl w-full max-w-xl shadow-2xl p-6 relative overflow-hidden flex flex-col max-h-[90vh]"
             id="share-modal-container"
           >
             {/* Ambient gold glow accent */}
@@ -964,91 +977,31 @@ const UniverseScaleLogo = () => (
               </button>
             </div>
 
-            {/* Split Dual-Column Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto flex-1 pr-1 pb-2">
+            {/* Content Container */}
+            <div className="overflow-y-auto flex-1 pr-1 pb-2 space-y-5">
               
-              {/* Left Column: High-Fidelity Ticket Image */}
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center space-x-1.5">
-                  <ImageIcon size={14} className="text-amber-400" />
-                  <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider font-mono">
-                    Visual Image Ticket
-                  </span>
-                </div>
-                
-                <div className="bg-[#080D18] rounded-2xl border border-slate-800/80 p-4 flex-1 min-h-[220px] max-h-[340px] overflow-y-auto flex flex-col items-center justify-center relative">
-                  {pngLoading ? (
-                    <div className="flex flex-col items-center space-y-3">
-                      <RefreshCw className="animate-spin text-amber-400" size={24} />
-                      <span className="text-xs text-slate-400 font-medium font-sans">Generating high-fidelity ticket image...</span>
-                    </div>
-                  ) : pngUrl ? (
-                    <div className="relative group max-w-full">
-                      <img 
-                        src={pngUrl} 
-                        alt="Weighbridge Thermal Receipt" 
-                        className="border border-slate-700/50 rounded-lg shadow-lg max-w-[180px] h-auto object-contain bg-[#fefefc]" 
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center pointer-events-none">
-                        <span className="text-[10px] bg-slate-900/90 border border-slate-700 text-slate-200 px-2 py-1 rounded font-sans">
-                          Sharp 3x Scale
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={handleGeneratePng}
-                      className="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 rounded-xl text-xs font-semibold cursor-pointer transition-all"
-                    >
-                      Generate Preview Image
-                    </button>
-                  )}
+              {/* Plaintext Ticket Block */}
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-1.5">
+                    <FileText size={14} className="text-amber-400" />
+                    <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider font-mono">
+                      Plaintext Ticket Preview
+                    </span>
+                  </div>
                 </div>
 
-                {/* Image-based share and download buttons */}
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={handleDownloadPng}
-                    disabled={!pngUrl || pngLoading}
-                    className="flex items-center justify-center space-x-2 py-2.5 px-3 bg-slate-800/50 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-800/50 border border-slate-700/60 rounded-xl text-xs font-semibold text-slate-200 hover:text-white transition-all cursor-pointer active:scale-95"
-                    id="share-btn-download-png"
-                  >
-                    <Download size={13} />
-                    <span>Download PNG</span>
-                  </button>
-
-                  <button 
-                    onClick={handleSharePng}
-                    disabled={!pngUrl || pngLoading}
-                    className="flex items-center justify-center space-x-2 py-2.5 px-3 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-40 disabled:hover:bg-amber-500/10 border border-amber-500/20 hover:border-amber-500/40 rounded-xl text-xs font-semibold text-amber-400 transition-all cursor-pointer active:scale-95"
-                    id="share-btn-native-png"
-                  >
-                    <Share2 size={13} />
-                    <span>Share Image</span>
-                  </button>
-                </div>
-
-                <div className="bg-[#070A11]/60 border border-slate-800/60 rounded-xl p-2.5 text-[10px] text-slate-400 text-center leading-relaxed font-sans">
-                  The generated PNG is rendered at <strong className="text-amber-400 font-medium">3x high-fidelity scale</strong>, matching standard thermal printing aspect ratios.
+                <div className="relative group bg-[#080D18] rounded-2xl border border-slate-800/80 p-4 max-h-[200px] overflow-y-auto font-mono text-xs text-amber-200/90 leading-relaxed whitespace-pre-wrap select-all">
+                  {generateReceiptPlainText(sections)}
                 </div>
               </div>
 
-              {/* Right Column: Plaintext Ticket */}
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center space-x-1.5">
-                  <FileText size={14} className="text-amber-400" />
-                  <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider font-mono">
-                    Plaintext Ticket Preview
-                  </span>
-                </div>
-
-                <div className="relative group bg-[#080D18] rounded-2xl border border-slate-800/80 p-4 flex-1 min-h-[220px] max-h-[340px] overflow-y-auto font-mono text-xs text-amber-200/90 leading-relaxed whitespace-pre-wrap select-all">
-                  {generateReceiptPlainText(sections)}
-                </div>
-
-                {/* Primary text-based share buttons */}
-                <div className="grid grid-cols-2 gap-3">
+              {/* Text Sharing Actions */}
+              <div className="space-y-2">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono block">
+                  Send Plaintext Slip
+                </span>
+                <div className="grid grid-cols-2 gap-2.5">
                   <button 
                     onClick={handleCopyText}
                     className="flex items-center justify-center space-x-2 py-2.5 px-3 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 rounded-xl text-xs font-semibold text-slate-200 hover:text-white transition-all cursor-pointer active:scale-95"
@@ -1073,7 +1026,7 @@ const UniverseScaleLogo = () => (
                     id="share-btn-whatsapp"
                   >
                     <MessageSquare size={13} />
-                    <span>WhatsApp</span>
+                    <span>WhatsApp Text</span>
                   </button>
 
                   <button 
@@ -1082,7 +1035,7 @@ const UniverseScaleLogo = () => (
                     id="share-btn-email"
                   >
                     <Mail size={13} />
-                    <span>Email</span>
+                    <span>Email Text</span>
                   </button>
 
                   <button 
@@ -1091,20 +1044,82 @@ const UniverseScaleLogo = () => (
                     id="share-btn-sms"
                   >
                     <Smartphone size={13} />
-                    <span>SMS</span>
+                    <span>SMS Text</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Native System Share for Text */}
+              <button 
+                onClick={handleNativeShare}
+                className="w-full py-2.5 bg-slate-800/40 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/50 rounded-xl text-xs font-semibold transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.98]"
+                id="share-btn-native"
+              >
+                <Share2 size={13} />
+                <span>Use System Share Sheet (Text)</span>
+                <ExternalLink size={12} className="opacity-60" />
+              </button>
+
+              {/* High-Fidelity PNG Ticket Generation Actions */}
+              <div className="border-t border-slate-800/80 pt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-1.5">
+                    <ImageIcon size={14} className="text-amber-400 animate-pulse" />
+                    <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider font-mono">
+                      High-Fidelity PNG Receipt
+                    </span>
+                  </div>
+                  {pngLoading && (
+                    <span className="text-[10px] text-amber-400 font-mono flex items-center space-x-1">
+                      <RefreshCw className="animate-spin" size={10} />
+                      <span>Generating image...</span>
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button 
+                    onClick={handleDownloadPng}
+                    disabled={pngLoading}
+                    className="flex items-center justify-center space-x-2 py-3 px-3 bg-amber-500/10 hover:bg-amber-500 hover:text-[#090D16] border border-amber-500/20 hover:border-amber-400 disabled:opacity-50 disabled:hover:bg-amber-500/10 disabled:hover:text-amber-400 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95"
+                    id="share-btn-download-png"
+                  >
+                    {pngLoading ? (
+                      <>
+                        <RefreshCw size={13} className="animate-spin" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download size={13} />
+                        <span>Download PNG</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={handleSharePng}
+                    disabled={pngLoading}
+                    className="flex items-center justify-center space-x-2 py-3 px-3 bg-amber-500/10 hover:bg-amber-500 hover:text-[#090D16] border border-amber-500/20 hover:border-amber-400 disabled:opacity-50 disabled:hover:bg-amber-500/10 disabled:hover:text-amber-400 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-95"
+                    id="share-btn-native-png"
+                  >
+                    {pngLoading ? (
+                      <>
+                        <RefreshCw size={13} className="animate-spin" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 size={13} />
+                        <span>Share PNG</span>
+                      </>
+                    )}
                   </button>
                 </div>
 
-                {/* Native system sharing */}
-                <button 
-                  onClick={handleNativeShare}
-                  className="w-full py-2.5 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-[#090D16] border border-amber-500/30 hover:border-amber-400 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.98]"
-                  id="share-btn-native"
-                >
-                  <Share2 size={13} />
-                  <span>Use System Share Sheet</span>
-                  <ExternalLink size={12} className="opacity-60" />
-                </button>
+                <p className="text-[10px] text-slate-400 leading-relaxed font-sans text-center">
+                  PNG is compiled on demand at crisp <strong className="text-amber-400 font-medium">3x high-fidelity scale</strong>, matching real-world thermal receipt dimensions without laggy background pre-rendering.
+                </p>
               </div>
 
             </div>
