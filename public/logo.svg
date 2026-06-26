@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#11192e" />
+      <stop offset="60%" stop-color="#070a13" />
+      <stop offset="100%" stop-color="#03050a" />
+    </radialGradient>
+
+    <!-- Gold Gradients -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082" />
+      <stop offset="30%" stop-color="#FFD54F" />
+      <stop offset="70%" stop-color="#B28704" />
+      <stop offset="100%" stop-color="#FFB300" />
+    </linearGradient>
+
+    <linearGradient id="goldLightGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#B28704" />
+      <stop offset="50%" stop-color="#FFF59D" />
+      <stop offset="100%" stop-color="#F57C00" />
+    </linearGradient>
+
+    <!-- Galaxy Glow Gradients -->
+    <radialGradient id="galaxyGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="1" />
+      <stop offset="25%" stop-color="#80DEEA" stop-opacity="0.8" />
+      <stop offset="60%" stop-color="#311B92" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#000" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Deep Cosmic Background -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+
+  <!-- Stars / Nebulae in Background -->
+  <g opacity="0.6">
+    <circle cx="120" cy="140" r="1.5" fill="#fff" />
+    <circle cx="380" cy="110" r="2" fill="#fff" opacity="0.8" />
+    <circle cx="420" cy="320" r="1" fill="#fff" opacity="0.5" />
+    <circle cx="90" cy="290" r="1.5" fill="#fff" />
+    <circle cx="210" cy="80" r="2.5" fill="#fff" opacity="0.9" />
+    <circle cx="310" cy="420" r="1.2" fill="#fff" opacity="0.4" />
+    <circle cx="160" cy="390" r="2" fill="#fff" opacity="0.7" />
+  </g>
+
+  <!-- Outer Elegant Gold Ring -->
+  <circle cx="256" cy="256" r="230" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-dasharray="1 4" opacity="0.4" />
+  <circle cx="256" cy="256" r="222" fill="none" stroke="url(#goldGrad)" stroke-width="2" />
+  <circle cx="256" cy="256" r="214" fill="none" stroke="url(#goldGrad)" stroke-width="1" stroke-dasharray="6 3" opacity="0.7" />
+
+  <!-- Decorative Astrological Dots on Ring -->
+  <g fill="url(#goldGrad)" opacity="0.8">
+    <circle cx="256" cy="42" r="4" />
+    <circle cx="256" cy="470" r="4" />
+    <circle cx="42" cy="256" r="4" />
+    <circle cx="470" cy="256" r="4" />
+    <circle cx="121" cy="121" r="3" />
+    <circle cx="391" cy="121" r="3" />
+    <circle cx="121" cy="391" r="3" />
+    <circle cx="391" cy="391" r="3" />
+  </g>
+
+  <!-- Galaxy / Nebula Spiral in the Center -->
+  <g transform="translate(256, 210) rotate(-15)">
+    <!-- Central Glow -->
+    <ellipse cx="0" cy="0" rx="90" ry="35" fill="url(#galaxyGrad)" opacity="0.8" />
+    
+    <!-- Spiral Arms -->
+    <path d="M -80,-10 C -120,-30 -80,-70 0,-40 C 80,-10 120,40 40,50 C -40,60 -140,10 -100,-40 C -80,-60 -40,-60 0,-30" 
+          fill="none" stroke="#80DEEA" stroke-width="12" stroke-linecap="round" filter="blur(6px)" opacity="0.5" />
+    <path d="M 80,10 C 120,30 80,70 0,40 C -80,10 -120,-40 -40,-50 C 40,-60 140,-10 100,40 C 80,60 40,60 0,30" 
+          fill="none" stroke="#E1BEE7" stroke-width="8" stroke-linecap="round" filter="blur(4px)" opacity="0.6" />
+    <ellipse cx="0" cy="0" rx="30" ry="12" fill="#FFF" filter="blur(2px)" />
+  </g>
+
+  <!-- Golden Weighing Scale (Universe Scales) -->
+  <g id="scales-structure">
+    <!-- Center Column Base -->
+    <path d="M 220,380 L 292,380 L 280,365 L 232,365 Z" fill="url(#goldGrad)" />
+    <rect x="248" y="220" width="16" height="145" fill="url(#goldGrad)" rx="4" />
+    <circle cx="256" cy="130" r="16" fill="url(#goldGrad)" />
+    <circle cx="256" cy="130" r="6" fill="#070a13" />
+
+    <!-- Center Needle Indicator -->
+    <polygon points="256,110 253,165 259,165" fill="url(#goldLightGrad)" />
+
+    <!-- Scale Main Beam (Hanger) -->
+    <path d="M 110,145 C 160,115 210,125 256,130 C 302,125 352,115 402,145 C 390,150 256,140 110,145 Z" fill="url(#goldGrad)" />
+    <circle cx="112" cy="144" r="8" fill="url(#goldLightGrad)" />
+    <circle cx="400" cy="144" r="8" fill="url(#goldLightGrad)" />
+
+    <!-- Left Plate Hanging Strings -->
+    <line x1="112" y1="144" x2="72" y2="280" stroke="url(#goldGrad)" stroke-width="2" opacity="0.8" />
+    <line x1="112" y1="144" x2="152" y2="280" stroke="url(#goldGrad)" stroke-width="2" opacity="0.8" />
+    <!-- Left Plate / Pan -->
+    <path d="M 62,280 L 162,280 C 162,280 152,310 112,310 C 72,310 62,280 62,280 Z" fill="url(#goldGrad)" />
+    <rect x="58" y="278" width="108" height="4" fill="url(#goldLightGrad)" rx="2" />
+    <!-- Sun/Moon Emblem inside Left Pan -->
+    <circle cx="112" cy="240" r="15" fill="url(#goldLightGrad)" opacity="0.2" />
+    <circle cx="112" cy="240" r="8" fill="url(#goldGrad)" />
+
+    <!-- Right Plate Hanging Strings -->
+    <line x1="400" y1="144" x2="360" y2="280" stroke="url(#goldGrad)" stroke-width="2" opacity="0.8" />
+    <line x1="400" y1="144" x2="440" y2="280" stroke="url(#goldGrad)" stroke-width="2" opacity="0.8" />
+    <!-- Right Plate / Pan -->
+    <path d="M 350,280 L 450,280 C 450,280 440,310 400,310 C 360,310 350,280 350,280 Z" fill="url(#goldGrad)" />
+    <rect x="346" y="278" width="108" height="4" fill="url(#goldLightGrad)" rx="2" />
+    <!-- Stars Emblem inside Right Pan -->
+    <circle cx="400" cy="240" r="15" fill="url(#goldLightGrad)" opacity="0.2" />
+    <polygon points="400,232 403,238 409,240 403,242 400,248 397,242 391,240 397,238" fill="url(#goldGrad)" />
+  </g>
+
+  <!-- "UWS" Branding Text at Bottom -->
+  <g transform="translate(256, 420)">
+    <text text-anchor="middle" font-family="'Cinzel', 'Trajan Pro', 'Inter', 'Cinzel Decorative', sans-serif" font-weight="900" font-size="44" fill="url(#goldLightGrad)" letter-spacing="8">UWS</text>
+    <text y="24" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="600" font-size="11" fill="#80DEEA" letter-spacing="4" opacity="0.9">UNIVERSE WEIGHING SYSTEM</text>
+    <text y="38" text-anchor="middle" font-family="'Inter', sans-serif" font-size="8" fill="#90A4AE" letter-spacing="2" opacity="0.7">BALANCING THE COSMOS</text>
+  </g>
+</svg>

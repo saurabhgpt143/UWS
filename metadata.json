@@ -1,0 +1,6 @@
+{
+  "name": "UWS",
+  "description": "Universe Weighing System - Premium cosmic scale simulator, logistics weighbridge designer, and thermal receipt station balancing the cosmos.",
+  "requestFramePermissions": ["camera", "bluetooth"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
