@@ -384,23 +384,33 @@ export default function App() {
             text: `Visual PNG image of thermal receipt for ${paperWidthMm}mm paper`,
           });
         } else {
-          // Fallback to download
+          // Fallback to Blob Object URL download for iframe sandbox compatibility
+          const blobUrl = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = dataUrl;
+          a.href = blobUrl;
           a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
         }
       } else {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = dataUrl;
+        a.href = blobUrl;
         a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err && (err.name === 'AbortError' || err.message?.toLowerCase().includes('canceled') || err.message?.toLowerCase().includes('cancelled') || err.message?.toLowerCase().includes('abort'))) {
+        console.log('Share canceled by user.');
+        return;
+      }
       console.error('Failed to generate preview PNG:', err);
     } finally {
       setPreviewPngLoading(false);
@@ -614,14 +624,22 @@ export default function App() {
     }
   };
 
-  const handleDownloadPng = () => {
+  const handleDownloadPng = async () => {
     if (!pngUrl) return;
-    const a = document.createElement('a');
-    a.href = pngUrl;
-    a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    try {
+      const res = await fetch(pngUrl);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    } catch (err) {
+      console.error('Failed to download PNG:', err);
+    }
   };
 
   const handleSharePng = async () => {
@@ -643,6 +661,10 @@ export default function App() {
         handleDownloadPng();
       }
     } catch (err: any) {
+      if (err && (err.name === 'AbortError' || err.message?.toLowerCase().includes('canceled') || err.message?.toLowerCase().includes('cancelled') || err.message?.toLowerCase().includes('abort'))) {
+        console.log('Share canceled by user.');
+        return;
+      }
       console.error('Web Share failed for PNG, downloading fallback:', err);
       handleDownloadPng();
     }
