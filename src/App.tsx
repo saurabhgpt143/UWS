@@ -384,27 +384,21 @@ export default function App() {
             text: `Visual PNG image of thermal receipt for ${paperWidthMm}mm paper`,
           });
         } else {
-          // Fallback to Blob Object URL download for iframe sandbox compatibility
-          const blobUrl = URL.createObjectURL(blob);
+          // Fallback to download
           const a = document.createElement('a');
-          a.href = blobUrl;
+          a.href = dataUrl;
           a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
         }
       } else {
-        const res = await fetch(dataUrl);
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = blobUrl;
+        a.href = dataUrl;
         a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
       }
     } catch (err: any) {
       if (err && (err.name === 'AbortError' || err.message?.toLowerCase().includes('canceled') || err.message?.toLowerCase().includes('cancelled') || err.message?.toLowerCase().includes('abort'))) {
@@ -624,22 +618,14 @@ export default function App() {
     }
   };
 
-  const handleDownloadPng = async () => {
+  const handleDownloadPng = () => {
     if (!pngUrl) return;
-    try {
-      const res = await fetch(pngUrl);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-    } catch (err) {
-      console.error('Failed to download PNG:', err);
-    }
+    const a = document.createElement('a');
+    a.href = pngUrl;
+    a.download = `weighbridge-receipt-${paperWidthMm}mm.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleSharePng = async () => {
