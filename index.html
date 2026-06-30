@@ -11,6 +11,27 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="UWS" />
+    <style>
+      /* Completely hide Vercel Toolbar/Live Feedback elements and any injected iframes */
+      vercel-live-feedback, 
+      #vercel-live-feedback, 
+      .vercel-feedback,
+      iframe[src*="vercel"],
+      [id*="vercel-live-feedback"], 
+      [class*="vercel-live-feedback"],
+      [id*="vercel-feedback"],
+      [class*="vercel-feedback"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
+      }
+    </style>
     <script>
       // Clean up any stale Service Workers and Caches to prevent Chrome blank screen issues
       if ('serviceWorker' in navigator) {
@@ -29,6 +50,45 @@
           }
         });
       }
+
+      // Proactively observe the DOM and remove any dynamically injected Vercel Toolbar elements
+      const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeType === 1) { // Element node
+              const el = node;
+              const tagName = el.tagName.toLowerCase();
+              const id = el.id || '';
+              const className = typeof el.className === 'string' ? el.className : '';
+              const src = el.src || '';
+              
+              if (
+                tagName.includes('vercel') || 
+                tagName.includes('feedback') ||
+                id.includes('vercel') || 
+                id.includes('feedback') ||
+                className.includes('vercel') || 
+                className.includes('feedback') ||
+                src.includes('vercel')
+              ) {
+                try {
+                  el.remove();
+                  console.log('Successfully intercepted and removed Vercel Toolbar element.');
+                } catch (e) {
+                  // Fallback: hide it if removal fails
+                  el.style.display = 'none';
+                  el.style.visibility = 'hidden';
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
     </script>
   </head>
   <body class="bg-[#050811]">
