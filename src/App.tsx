@@ -19,7 +19,8 @@ const PAPER_ROLL_STYLES: PaperType[] = [
     pxWidth: 260,
     bgClass: 'bg-[#FFFFFA] border-stone-200 shadow-sm',
     textClass: 'text-[#1D1C1A]',
-    burnClass: 'decoration-[#1D1C1A]'
+    burnClass: 'decoration-[#1D1C1A]',
+    hexColor: '#1D1C1A'
   },
   {
     id: 'blue',
@@ -29,7 +30,8 @@ const PAPER_ROLL_STYLES: PaperType[] = [
     pxWidth: 260,
     bgClass: 'bg-[#FFFDF3] border-stone-200/50 shadow-sm',
     textClass: 'text-[#1B4FA3]',
-    burnClass: 'decoration-[#1B4FA3]'
+    burnClass: 'decoration-[#1B4FA3]',
+    hexColor: '#1B4FA3'
   },
   {
     id: 'gameboy',
@@ -39,7 +41,8 @@ const PAPER_ROLL_STYLES: PaperType[] = [
     pxWidth: 260,
     bgClass: 'bg-[#C5CFB6] border-stone-400 shadow-inner',
     textClass: 'text-[#2D3C2C]',
-    burnClass: 'decoration-[#2D3C2C]'
+    burnClass: 'decoration-[#2D3C2C]',
+    hexColor: '#2D3C2C'
   },
   {
     id: 'yellow',
@@ -49,7 +52,8 @@ const PAPER_ROLL_STYLES: PaperType[] = [
     pxWidth: 260,
     bgClass: 'bg-[#FFFCA0] border-yellow-200 shadow-sm',
     textClass: 'text-stone-900',
-    burnClass: 'decoration-stone-900'
+    burnClass: 'decoration-stone-900',
+    hexColor: '#1C1917'
   },
   {
     id: 'pink',
@@ -59,7 +63,8 @@ const PAPER_ROLL_STYLES: PaperType[] = [
     pxWidth: 260,
     bgClass: 'bg-[#FFE2EE] border-pink-200 shadow-sm',
     textClass: 'text-stone-800',
-    burnClass: 'decoration-stone-800'
+    burnClass: 'decoration-stone-800',
+    hexColor: '#292524'
   }
 ];
 
@@ -301,6 +306,197 @@ export default function App() {
   const [pngLoading, setPngLoading] = useState<boolean>(false);
   const [previewPngLoading, setPreviewPngLoading] = useState<boolean>(false);
 
+  const CLEAN_RECEIPT_CSS = `
+    * {
+      box-sizing: border-box !important;
+      margin: 0;
+      padding: 0;
+    }
+    .font-mono {
+      font-family: monospace, Courier, "Courier New", ui-monospace !important;
+    }
+    .select-none {
+      user-select: none !important;
+    }
+    .mx-auto {
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+    .text-center {
+      text-align: center !important;
+    }
+    .text-right {
+      text-align: right !important;
+    }
+    .text-left {
+      text-align: left !important;
+    }
+    .font-bold {
+      font-weight: bold !important;
+    }
+    .uppercase {
+      text-transform: uppercase !important;
+    }
+    .tracking-wider {
+      letter-spacing: 0.05em !important;
+    }
+    .tracking-widest {
+      letter-spacing: 0.1em !important;
+    }
+    .leading-snug {
+      line-height: 1.375 !important;
+    }
+    .leading-tight {
+      line-height: 1.25 !important;
+    }
+    .leading-none {
+      line-height: 1 !important;
+    }
+    .border-b {
+      border-bottom-width: 1px !important;
+    }
+    .border-t {
+      border-top-width: 1px !important;
+    }
+    .border-dashed {
+      border-style: dashed !important;
+    }
+    .pb-2 {
+      padding-bottom: 0.5rem !important;
+    }
+    .mb-2 {
+      margin-bottom: 0.5rem !important;
+    }
+    .pb-1 {
+      padding-bottom: 0.25rem !important;
+    }
+    .pt-2 {
+      padding-top: 0.5rem !important;
+    }
+    .pb-0.5 {
+      padding-bottom: 0.125rem !important;
+    }
+    .mb-1 {
+      margin-bottom: 0.25rem !important;
+    }
+    .mt-2 {
+      margin-top: 0.5rem !important;
+    }
+    .mt-0.5 {
+      margin-top: 0.125rem !important;
+    }
+    .space-y-0.5 > * + * {
+      margin-top: 0.125rem !important;
+    }
+    .space-y-1 > * + * {
+      margin-top: 0.25rem !important;
+    }
+    .flex {
+      display: flex !important;
+    }
+    .justify-between {
+      justify-content: space-between !important;
+    }
+    .items-center {
+      align-items: center !important;
+    }
+    .items-stretch {
+      align-items: stretch !important;
+    }
+    .flex-col {
+      flex-direction: column !important;
+    }
+    .flex-1 {
+      flex: 1 1 0% !important;
+    }
+    .shrink-0 {
+      flex-shrink: 0 !important;
+    }
+    .truncate {
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
+    .underline {
+      text-decoration-line: underline !important;
+    }
+    .bg-current {
+      background-color: currentColor !important;
+    }
+    .text-white {
+      color: #ffffff !important;
+    }
+    .px-1.5 {
+      padding-left: 0.375rem !important;
+      padding-right: 0.375rem !important;
+    }
+    .py-0.5 {
+      padding-top: 0.125rem !important;
+      padding-bottom: 0.125rem !important;
+    }
+    .rounded-xs {
+      border-radius: 1px !important;
+    }
+    .rounded {
+      border-radius: 0.25rem !important;
+    }
+    .p-1 {
+      padding: 0.25rem !important;
+    }
+    .bg-white {
+      background-color: #ffffff !important;
+    }
+    .border {
+      border-width: 1px !important;
+      border-style: solid !important;
+    }
+    .border-stone-200 {
+      border-color: #e7e5e4 !important;
+    }
+    .mb-1 {
+      margin-bottom: 0.25rem !important;
+    }
+    .grid {
+      display: grid !important;
+    }
+    .grid-cols-15 {
+      grid-template-columns: repeat(15, minmax(0, 1fr)) !important;
+    }
+    .w-14 {
+      width: 3.5rem !important;
+    }
+    .h-14 {
+      height: 3.5rem !important;
+    }
+    .w-full {
+      width: 100% !important;
+    }
+    .h-full {
+      height: 100% !important;
+    }
+    .h-8 {
+      height: 2rem !important;
+    }
+    .space-x-px > * + * {
+      margin-left: 1px !important;
+    }
+    .w-4\\/5 {
+      width: 80% !important;
+    }
+    .max-w-\\[160px\\] {
+      max-width: 160px !important;
+    }
+    .bg-transparent {
+      background-color: transparent !important;
+    }
+    .scale-x-\\[1\\.3\\] {
+      transform: scaleX(1.3) !important;
+    }
+    .bg-slate-900 {
+      background-color: #0f172a !important;
+    }
+  `;
+
   const handleSharePreviewPng = async (shouldShare: boolean) => {
     if (!receiptRef.current) return;
     setPreviewPngLoading(true);
@@ -313,59 +509,16 @@ export default function App() {
         logging: false,
         backgroundColor: '#fefefc', // Force clean light paper background
         onclone: (clonedDoc) => {
-          // Process and strip oklch and color-mix from all stylesheets in the cloned document
-          const styleTags = clonedDoc.querySelectorAll('style');
-          styleTags.forEach(styleTag => {
-            let cssText = styleTag.textContent || '';
-            if (cssText.includes('oklch') || cssText.includes('color-mix')) {
-              // 1. Replace oklch(...) functions with black #000000
-              cssText = cssText.replace(/oklch\([^)]+\)/g, '#000000');
-              
-              // 2. Resolve color-mix functions safely to a standard transparent/solid color
-              let index;
-              while ((index = cssText.indexOf('color-mix(')) !== -1) {
-                let openCount = 1;
-                let i = index + 'color-mix('.length;
-                while (i < cssText.length && openCount > 0) {
-                  if (cssText[i] === '(') openCount++;
-                  else if (cssText[i] === ')') openCount--;
-                  i++;
-                }
-                const fullExpression = cssText.substring(index, i);
-                cssText = cssText.replace(fullExpression, 'rgba(0,0,0,0.15)');
-              }
-              
-              styleTag.textContent = cssText;
-            }
-          });
+          // Remove all complex style and link sheets to prevent parser crashes
+          const links = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
+          links.forEach(el => el.remove());
+          const styles = clonedDoc.querySelectorAll('style');
+          styles.forEach(el => el.remove());
 
-          // Also strip from any inline styles of elements in the cloned document to be 100% robust
-          const allClonedElements = clonedDoc.querySelectorAll('*');
-          allClonedElements.forEach(el => {
-            const htmlEl = el as HTMLElement;
-            if (htmlEl.style) {
-              const keys = Array.from(htmlEl.style);
-              keys.forEach(key => {
-                const value = htmlEl.style.getPropertyValue(key);
-                if (value.includes('oklch') || value.includes('color-mix')) {
-                  let cleanValue = value.replace(/oklch\([^)]+\)/g, '#000000');
-                  let index;
-                  while ((index = cleanValue.indexOf('color-mix(')) !== -1) {
-                    let openCount = 1;
-                    let i = index + 'color-mix('.length;
-                    while (i < cleanValue.length && openCount > 0) {
-                      if (cleanValue[i] === '(') openCount++;
-                      else if (cleanValue[i] === ')') openCount--;
-                      i++;
-                    }
-                    const fullExpression = cleanValue.substring(index, i);
-                    cleanValue = cleanValue.replace(fullExpression, 'rgba(0,0,0,0.15)');
-                  }
-                  htmlEl.style.setProperty(key, cleanValue);
-                }
-              });
-            }
-          });
+          // Inject ultra clean, simple, standard styles for maximum compatibility
+          const customStyle = clonedDoc.createElement('style');
+          customStyle.textContent = CLEAN_RECEIPT_CSS;
+          clonedDoc.head.appendChild(customStyle);
         }
       });
       const dataUrl = canvas.toDataURL('image/png');
@@ -447,59 +600,16 @@ export default function App() {
         logging: false,
         backgroundColor: '#fefefc', // Force clean light paper background
         onclone: (clonedDoc) => {
-          // Process and strip oklch and color-mix from all stylesheets in the cloned document
-          const styleTags = clonedDoc.querySelectorAll('style');
-          styleTags.forEach(styleTag => {
-            let cssText = styleTag.textContent || '';
-            if (cssText.includes('oklch') || cssText.includes('color-mix')) {
-              // 1. Replace oklch(...) functions with black #000000
-              cssText = cssText.replace(/oklch\([^)]+\)/g, '#000000');
-              
-              // 2. Resolve color-mix functions safely to a standard transparent/solid color
-              let index;
-              while ((index = cssText.indexOf('color-mix(')) !== -1) {
-                let openCount = 1;
-                let i = index + 'color-mix('.length;
-                while (i < cssText.length && openCount > 0) {
-                  if (cssText[i] === '(') openCount++;
-                  else if (cssText[i] === ')') openCount--;
-                  i++;
-                }
-                const fullExpression = cssText.substring(index, i);
-                cssText = cssText.replace(fullExpression, 'rgba(0,0,0,0.15)');
-              }
-              
-              styleTag.textContent = cssText;
-            }
-          });
+          // Remove all complex style and link sheets to prevent parser crashes
+          const links = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
+          links.forEach(el => el.remove());
+          const styles = clonedDoc.querySelectorAll('style');
+          styles.forEach(el => el.remove());
 
-          // Also strip from any inline styles of elements in the cloned document to be 100% robust
-          const allClonedElements = clonedDoc.querySelectorAll('*');
-          allClonedElements.forEach(el => {
-            const htmlEl = el as HTMLElement;
-            if (htmlEl.style) {
-              const keys = Array.from(htmlEl.style);
-              keys.forEach(key => {
-                const value = htmlEl.style.getPropertyValue(key);
-                if (value.includes('oklch') || value.includes('color-mix')) {
-                  let cleanValue = value.replace(/oklch\([^)]+\)/g, '#000000');
-                  let index;
-                  while ((index = cleanValue.indexOf('color-mix(')) !== -1) {
-                    let openCount = 1;
-                    let i = index + 'color-mix('.length;
-                    while (i < cleanValue.length && openCount > 0) {
-                      if (cleanValue[i] === '(') openCount++;
-                      else if (cleanValue[i] === ')') openCount--;
-                      i++;
-                    }
-                    const fullExpression = cleanValue.substring(index, i);
-                    cleanValue = cleanValue.replace(fullExpression, 'rgba(0,0,0,0.15)');
-                  }
-                  htmlEl.style.setProperty(key, cleanValue);
-                }
-              });
-            }
-          });
+          // Inject ultra clean, simple, standard styles for maximum compatibility
+          const customStyle = clonedDoc.createElement('style');
+          customStyle.textContent = CLEAN_RECEIPT_CSS;
+          clonedDoc.head.appendChild(customStyle);
         }
       });
       const dataUrl = canvas.toDataURL('image/png');
@@ -673,6 +783,18 @@ export default function App() {
   // High-fidelity HTML presentation of standard receipt nodes to render inside virtual paper roll
   const renderThermalReceiptHtml = () => {
     const charsCount = paperWidthMm === 58 ? 32 : 48;
+    const currentColor = selectedPaperStyle.hexColor || '#1D1C1A';
+
+    const getAlphaColor = (hex: string, alpha: number) => {
+      if (hex.startsWith('#')) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+      return hex;
+    };
+
     return (
       <div 
         className={`font-mono select-none mx-auto ${selectedPaperStyle.textClass}`} 
@@ -692,7 +814,12 @@ export default function App() {
               case 'header': {
                 const h = sec.content as any;
                 return (
-                  <div key={sec.id} className="border-b border-dashed border-current pb-2 mb-2 text-center" id={`preview-${sec.id}`}>
+                  <div 
+                    key={sec.id} 
+                    className="border-b border-dashed pb-2 mb-2 text-center" 
+                    style={{ borderColor: currentColor }}
+                    id={`preview-${sec.id}`}
+                  >
                     <h3 className="font-bold text-xs uppercase tracking-wider">{h.title}</h3>
                     {h.subtitle && <p className="text-[8px] opacity-80 leading-snug">{h.subtitle}</p>}
                     
@@ -713,9 +840,17 @@ export default function App() {
               case 'items': {
                 const it = sec.content as any;
                 return (
-                  <div key={sec.id} className="text-[8.5px] py-1 border-b border-dashed border-current/60" id={`preview-${sec.id}`}>
+                  <div 
+                    key={sec.id} 
+                    className="text-[8.5px] py-1 border-b border-dashed" 
+                    style={{ borderColor: getAlphaColor(currentColor, 0.6) }}
+                    id={`preview-${sec.id}`}
+                  >
                     {it.showHeaders !== false && (
-                      <div className="flex justify-between font-bold border-b border-current/30 pb-0.5 mb-1 text-[8px] uppercase">
+                      <div 
+                        className="flex justify-between font-bold border-b pb-0.5 mb-1 text-[8px] uppercase"
+                        style={{ borderColor: getAlphaColor(currentColor, 0.3) }}
+                      >
                         <span>Item Ledger</span>
                         <span>Total</span>
                       </div>
@@ -747,7 +882,12 @@ export default function App() {
               case 'totals': {
                 const tot = sec.content as any;
                 return (
-                  <div key={sec.id} className="text-[8.5px] py-1 space-y-0.5 border-b border-dashed border-current/80" id={`preview-${sec.id}`}>
+                  <div 
+                    key={sec.id} 
+                    className="text-[8.5px] py-1 space-y-0.5 border-b border-dashed" 
+                    style={{ borderColor: getAlphaColor(currentColor, 0.8) }}
+                    id={`preview-${sec.id}`}
+                  >
                     {tot.rows?.map((row: any, idx: number) => (
                       <div key={idx} className={`flex justify-between ${row.isBold ? 'font-bold text-[9.5px]' : ''}`}>
                         <span>{row.label}</span>
@@ -849,10 +989,10 @@ export default function App() {
                         const isBottomLeft = row >= 11 && col < 4;
                         
                         const isFinderRing = 
-                          (isTopLeft && (row === 0 || row === 3 || col === 0 || col === 3)) ||
-                          (isTopRight && (row === 0 || row === 3 || col === 11 || col === 14)) ||
-                          (isBottomLeft && (row === 11 || row === 14 || col === 0 || col === 3));
-                          
+                           (isTopLeft && (row === 0 || row === 3 || col === 0 || col === 3)) ||
+                           (isTopRight && (row === 0 || row === 3 || col === 11 || col === 14)) ||
+                           (isBottomLeft && (row === 11 || row === 14 || col === 0 || col === 3));
+                           
                         const isFinderDot = 
                           (isTopLeft && row === 1.5 && col === 1.5) || // close approximate center
                           (isTopRight && row === 1.5 && col === 12.5) ||
@@ -891,9 +1031,14 @@ export default function App() {
               case 'footer': {
                 const f = sec.content as any;
                 return (
-                  <div key={sec.id} className="text-center pt-2 pb-1 border-t border-dashed border-current/40" id={`preview-${sec.id}`}>
+                  <div 
+                    key={sec.id} 
+                    className="text-center pt-2 pb-1 border-t border-dashed" 
+                    style={{ borderColor: getAlphaColor(currentColor, 0.4) }}
+                    id={`preview-${sec.id}`}
+                  >
                     {f.asciiArt && (
-                      <pre className="text-[7.5px] opacity-80 overflow-hidden leading-none leading-tight py-1 font-mono text-center">
+                      <pre className="text-[7.5px] opacity-80 overflow-hidden leading-tight py-1 font-mono text-center">
                         {f.asciiArt}
                       </pre>
                     )}

@@ -105,6 +105,7 @@ export interface PaperType {
   bgClass: string; // CSS class for paper color
   textClass: string; // CSS class for print color
   burnClass: string; // CSS class for thermal burn look
+  hexColor?: string; // Hex color code for the text ink
 }
 
 export interface PrinterConfig {
