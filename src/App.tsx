@@ -400,11 +400,7 @@ export default function App() {
         a.click();
         document.body.removeChild(a);
       }
-    } catch (err: any) {
-      if (err && (err.name === 'AbortError' || err.message?.toLowerCase().includes('canceled') || err.message?.toLowerCase().includes('cancelled') || err.message?.toLowerCase().includes('abort'))) {
-        console.log('Share canceled by user.');
-        return;
-      }
+    } catch (err) {
       console.error('Failed to generate preview PNG:', err);
     } finally {
       setPreviewPngLoading(false);
@@ -647,10 +643,6 @@ export default function App() {
         handleDownloadPng();
       }
     } catch (err: any) {
-      if (err && (err.name === 'AbortError' || err.message?.toLowerCase().includes('canceled') || err.message?.toLowerCase().includes('cancelled') || err.message?.toLowerCase().includes('abort'))) {
-        console.log('Share canceled by user.');
-        return;
-      }
       console.error('Web Share failed for PNG, downloading fallback:', err);
       handleDownloadPng();
     }
